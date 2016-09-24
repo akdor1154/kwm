@@ -118,8 +118,17 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
         }
         else
         {
-            ax_display *Display = AXLibCursorDisplay();
-            tree_node *NewNode = GetTreeNodeForPoint(WindowTree[Display->Space->Identifier].RootNode, Cursor);
+            ax_display *CursorDisplay = AXLibCursorDisplay();
+            ax_display *WindowDisplay = AXLibWindowDisplay(Window);
+            tree_node *NewNode;
+            if (WindowDisplay != CursorDisplay)
+            {
+                NewNode = WindowTree[CursorDisplay->Space->Identifier].RootNode;
+            }
+            else
+            {
+                NewNode = GetTreeNodeForPoint(WindowTree[WindowDisplay->Space->Identifier].RootNode, Cursor);
+            }
             if(NewNode && NewNode != MarkedNode)
             {
                 MarkedNode = NewNode;
