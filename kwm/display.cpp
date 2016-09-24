@@ -137,6 +137,21 @@ void MoveWindowToDisplay(ax_window *Window, ax_display *NewDisplay)
     }
 }
 
+void RemoveWindowFromOtherDisplays(ax_window *Window)
+{
+    ax_display *WindowDisplay = AXLibWindowDisplay(Window);
+    
+    ax_display *MainDisplay = AXLibMainDisplay();
+    ax_display *Display = MainDisplay;
+    do
+    {
+        if(Display != WindowDisplay) {
+            RemoveWindowFromNodeTree(Display, Window->ID);
+        }
+        Display = AXLibNextDisplay(Display);
+    } while(Display != MainDisplay);
+}
+
 space_settings *GetSpaceSettingsForDisplay(unsigned int ScreenID)
 {
     std::map<unsigned int, space_settings>::iterator It = KWMSettings.DisplaySettings.find(ScreenID);
