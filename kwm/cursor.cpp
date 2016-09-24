@@ -5,6 +5,7 @@
 #include "space.h"
 #include "border.h"
 #include "../axlib/axlib.h"
+#include "display.h"
 
 #define internal static
 extern std::map<std::string, space_info> WindowTree;
@@ -76,13 +77,19 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseUp)
          * and its Focus can never be NULL here. */
 
         ax_window *Window = FocusedApplication->Focus;
-        if(MarkedNode && MarkedNode->WindowID != Window->ID)
-        {
-            ax_display *Display = AXLibWindowDisplay(Window);
-            tree_node *Node = GetTreeNodeFromWindowIDOrLinkNode(WindowTree[Display->Space->Identifier].RootNode, Window->ID);
-            if(Node)
+        ax_display *WindowDisplay = AXLibWindowDisplay(Window);
+        ax_display *CursorDisplay = AXLibCursorDisplay();
+        
+        if (WindowDisplay != CursorDisplay) {
+            MoveWindowToDisplay(Window, CursorDisplay);
+        } else {
+            if(MarkedNode && MarkedNode->WindowID != Window->ID)
             {
-                SwapNodeWindowIDs(Node, MarkedNode);
+                tree_node *Node = GetTreeNodeFromWindowIDOrLinkNode(WindowTree[WindowDisplay->Space->Identifier].RootNode, Window->ID);
+                if(Node)
+                {
+                    SwapNodeWindowIDs(Node, MarkedNode);
+                }
             }
         }
 
@@ -111,7 +118,7 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
         }
         else
         {
-            ax_display *Display = AXLibWindowDisplay(Window);
+            ax_display *Display = AXLibCursorDisplay();
             tree_node *NewNode = GetTreeNodeForPoint(WindowTree[Display->Space->Identifier].RootNode, Cursor);
             if(NewNode && NewNode != MarkedNode)
             {
